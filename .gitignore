@@ -8,3 +8,11 @@ crash.*.log
 .terraform.tfstate.lock.info
 .terraformrc
 terraform.rc
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
