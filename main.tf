@@ -1,73 +1,56 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source = "hashicorp/azurerm"
-      version = "3.0.2"
-    }
-  }
-  backend "azurerm" {
-    key = "infra-corenet/terraform.tfstate"
-  }
-  required_version = ">= 1.1.0"
+module "rg_corenet" {
+  source   = "./modules/resource_group"
+  name     = var.resource_groups["corenet"].name
+  location = var.resource_groups["corenet"].location
 }
 
-provider "azurerm" {
-  features {}
+module "rg_dnsgatekeeper" {
+  source   = "./modules/resource_group"
+  name     = var.resource_groups["dnsgatekeeper"].name
+  location = var.resource_groups["dnsgatekeeper"].location
 }
 
-resource "azurerm_resource_group" "corenet" {
-  name = var.corenet_resource_group_name
-  location = var.location
+module "vnet_hub" {
+  source              = "./modules/virtual_network"
+  name                = var.vnets["hub"].name
+  address_space       = var.vnets["hub"].address_space
+  resource_group_name = module.rg_corenet.name
+  location            = module.rg_corenet.location
 }
 
-resource "azurerm_network_watcher" "watcher" {
-  name = var.network_watcher_name
-  location = var.location
-  resource_group_name = azurerm_resource_group.corenet.name
+module "vnet_spoke" {
+  source              = "./modules/virtual_network"
+  name                = var.vnets["spoke"].name
+  address_space       = var.vnets["spoke"].address_space
+  resource_group_name = module.rg_corenet.name
+  location            = module.rg_corenet.location
 }
 
-resource "azurerm_virtual_network" "hub" {
-  name = var.hub_vnet_name
-  address_space = var.vnet_address_space
-  location = var.location
-  resource_group_name = azurerm_resource_group.corenet.name
+module "peering_hub_to_spoke" {
+  source                  = "./modules/virtual_network_peering"
+  name                    = var.peerings["hub_to_spoke"].name
+  virtual_network_name    = module.vnet_hub.name
+  resource_group_name     = module.rg_corenet.name
+  remote_virtual_network_id = module.vnet_spoke.id
 }
 
-resource "azurerm_virtual_network" "spoke" {
-  name = var.spoke_vnet_name
-  address_space = var.vnet_address_space
-  location = var.location
-  resource_group_name = azurerm_resource_group.corenet.name
+module "peering_spoke_to_hub" {
+  source                  = "./modules/virtual_network_peering"
+  name                    = var.peerings["spoke_to_hub"].name
+  virtual_network_name    = module.vnet_spoke.name
+  resource_group_name     = module.rg_corenet.name
+  remote_virtual_network_id = module.vnet_hub.id
 }
 
-resource "azurerm_resource_group" "dnsgatekeeper" {
-  name = var.dnsgatekeeper_resource_group_name
-  location = var.location
+module "network_watcher" {
+  source              = "./modules/network_watcher"
+  name                = var.network_watchers["corenet"].name
+  resource_group_name = module.rg_corenet.name
+  location            = module.rg_corenet.location
 }
 
-resource "azurerm_dns_zone" "dns" {
-  name = var.dns_zone_name
-  resource_group_name = azurerm_resource_group.dnsgatekeeper.name
+module "dns_zone" {
+  source              = "./modules/dns_zone"
+  name                = var.dns_zones["public"].name
+  resource_group_name = module.rg_dnsgatekeeper.name
 }
-
-resource "azurerm_resource_group" "tfstate" {
-  name = var.tfstate_resource_group_name
-  location = var.location
-}
-
-resource "azurerm_storage_account" "tfstate" {
-  name = var.tfstate_storage_account_name
-  resource_group_name = var.tfstate_resource_group_name
-  location = var.location
-  account_tier = "Standard"
-  account_replication_type = "LRS"
-  allow_nested_items_to_be_public = false
-}
-
-resource "azurerm_storage_container" "tfstatecontainer" {
-  name = var.tfstate_container_name
-  storage_account_name = azurerm_storage_account.tfstate.name
-  container_access_type = "private"
-}
-
-
