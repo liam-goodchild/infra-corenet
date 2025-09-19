@@ -24,6 +24,7 @@ module "vnet_spoke" {
   address_space       = var.vnets["spoke"].address_space
   resource_group_name = module.rg_corenet.name
   location            = module.rg_corenet.location
+  subnets             = var.vnets["spoke"].subnets
 }
 
 module "peering_hub_to_spoke" {
@@ -53,4 +54,9 @@ module "dns_zone" {
   source              = "../../modules/dns_zone"
   name                = var.dns_zones["public"].name
   resource_group_name = module.rg_dnsgatekeeper.name
+}
+
+resource "porkbun_nameservers" "domain_ns" {
+  domain      = "skyhaven.ltd"
+  nameservers = module.dns_zone.name_servers
 }

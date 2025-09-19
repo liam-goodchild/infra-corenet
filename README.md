@@ -14,6 +14,8 @@ Deploys:
 - [x] Configure peerings between the VNets
 - [x] Configure subnets for application/VM use
 - [x] Refactor monolithic repo into modules and environments
-- [ ] Correct VNet peering code (do both sides of the peering need to be defined in IaC)
-- [ ] Make API call to Porkbun to automatically update name servers after deployment
+- [x] Correct VNet peering code (do both sides of the peering need to be defined in IaC?)
+- [x] Deploy subnets inside the spoke VNet
+- [x] Make API call to Porkbun to automatically update name servers after deployment
+- [ ] Refactor CVEngine to use Terraform instead of Bicep
 - [ ] Configure DNS zone to house portfolio.skyhaven.ltd and dev.portfolio.skyhaven.ltd records

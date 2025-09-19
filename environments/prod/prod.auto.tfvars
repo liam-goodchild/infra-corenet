@@ -14,6 +14,12 @@ vnets = {
     name          = "vnet-corenet-spoke-prod-uks-001"
     address_space = ["10.241.0.0/21"]
     rg_key        = "corenet"
+    subnets = {
+      default = {
+        name             = "snet-desktop-prod-uks-001"
+        address_prefixes = ["10.241.0.0/26"]
+      }
+    }
   }
 }
 

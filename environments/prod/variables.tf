@@ -10,6 +10,10 @@ variable "vnets" {
     name           = string
     address_space  = list(string)
     rg_key         = string
+    subnets        = optional(map(object({
+      name             = string
+      address_prefixes = list(string)
+    })), {})
   }))
 }
 
