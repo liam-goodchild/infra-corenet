@@ -57,6 +57,6 @@ module "dns_zone" {
 }
 
 resource "porkbun_nameservers" "domain_ns" {
-  domain      = "skyhaven.ltd"
+  domain      = var.dns_zones["public"].name
   nameservers = module.dns_zone.name_servers
 }
